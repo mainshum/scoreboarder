@@ -1,9 +1,6 @@
-# Default readme
+# Scoretracker
 
-## Tech used
+## Scripts
 
-- React (rendering)
-- Vite (build tool)
-- TW (styling)
-- cypress (testing e2e and unit)
-- @swan-io/chicane (routing)
+- `pnpm dev` to run the app
+- `pnpm test` to run cypress component tests
