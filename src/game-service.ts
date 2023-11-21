@@ -15,12 +15,12 @@ const sortByTotalScore = (a: Game, b: Game) => {
   return 0;
 };
 
-export const Scoreboard = (games: Game[] = []) => ({
+export const createScoreboard = (games: Game[] = []) => ({
   finishGame(gameId: string) {
-    return Scoreboard(games.filter((g) => g.id !== gameId));
+    return createScoreboard(games.filter((g) => g.id !== gameId));
   },
   addPoints(gameId: string, team: "home" | "away", points: number) {
-    return Scoreboard(
+    return createScoreboard(
       produce(games, (draft) => {
         const game = draft.find((g) => g.id === gameId);
 
@@ -36,7 +36,7 @@ export const Scoreboard = (games: Game[] = []) => ({
     );
   },
   startGame(home: string, away: string) {
-    return Scoreboard(
+    return createScoreboard(
       produce(games, (draft) => {
         draft.push({
           home: {
