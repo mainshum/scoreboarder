@@ -1,4 +1,4 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useMemo } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import { Game, Scoreboard } from "./game-service";
@@ -120,8 +120,6 @@ const App = () => {
       return;
     }
 
-    debugger;
-
     setScoreboard(scoreboard.startGame(home.value, away.value));
 
     home.value = "";
@@ -129,18 +127,22 @@ const App = () => {
   };
 
   const handleFinish = (gameId: string) => {
-    setScoreboard((s) => s.finishGame(gameId));
+    setScoreboard(scoreboard.finishGame(gameId));
   };
 
   const handleAdd = (gameId: string, whoScored: "home" | "away") => {
-    setScoreboard((s) => s.addPoints(gameId, whoScored, 1));
+    setScoreboard(scoreboard.addPoints(gameId, whoScored, 1));
   };
+
+  const summary = useMemo(() => {
+    return scoreboard.getGames();
+  }, [scoreboard]);
 
   return (
     <main className="flex flex-col gap-6 justify-center items-center p-24 ">
       <GameOperations onAddNew={handleAddNew} />
       <div ref={gamesRef} className="flex flex-col gap-4">
-        {scoreboard.getGames().map((game) => (
+        {summary.map((game) => (
           <Game
             onFinish={handleFinish}
             onAdd={handleAdd}
