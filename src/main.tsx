@@ -4,13 +4,7 @@ import "./index.css";
 import { Game, Scoreboard } from "./game-service";
 import tw from "tailwind-styled-components";
 import { nanoid } from "nanoid";
-
-type GameHandlersContext = {
-  onAddNew: (h: string, away: string) => void;
-  scoreboard: ReturnType<typeof Scoreboard>;
-};
-
-const gameHandlersCtx = React.createContext({} as GameHandlersContext);
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const Container = tw.div`
   rounded
@@ -18,39 +12,6 @@ const Container = tw.div`
   border-lightgray-500
   p-6
 `;
-
-const GameOperations = () => {
-  const { onAddNew } = React.useContext(gameHandlersCtx);
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const elements = e.currentTarget.elements;
-    const home = elements.namedItem("home") as HTMLInputElement;
-    const away = elements.namedItem("away") as HTMLInputElement;
-
-    onAddNew(home.value, away.value);
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col border-yellow-50 border-2"
-    >
-      <div>
-        <label htmlFor="home">Home</label>
-        <input name="home" type="text" id="home" />
-        <label htmlFor="away">Away</label>
-        <input type="text" id="away" />
-      </div>
-      <button
-        type="submit"
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Add Game
-      </button>
-    </form>
-  );
-};
 
 const Button = tw.button`
   rounded
@@ -60,6 +21,55 @@ const Button = tw.button`
   p-2
   text-sm
 `;
+
+const Label = tw.label`
+  text-sm
+  text-gray-500
+  font-semibold
+`;
+
+const GameOperations = ({
+  onAddNew,
+}: {
+  onAddNew: (home: string, away: string) => void;
+}) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const elements = e.currentTarget.elements;
+    const home = elements.namedItem("home") as HTMLInputElement;
+    const away = elements.namedItem("away") as HTMLInputElement;
+
+    onAddNew(home.value, away.value);
+
+    home.value = "";
+    away.value = "";
+  };
+
+  return (
+    <Container
+      $as="form"
+      onSubmit={(e) => handleSubmit(e as FormEvent<HTMLFormElement>)}
+      className="flex flex-col gap-4 justify-center items-center"
+    >
+      <div className="flex gap-2">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="home">Home</Label>
+          <Container className="p-1" $as="input" name="home" type="text" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="away">Away</Label>
+          <Container className="p-1" $as="input" name="away" type="text" />
+        </div>
+      </div>
+      <button
+        type="submit"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Add Game
+      </button>
+    </Container>
+  );
+};
 
 const Game = ({
   game: { home, away, id },
@@ -76,7 +86,7 @@ const Game = ({
       <span>{home.score}</span>
       <span>-</span>
       <span>{away.score}</span>
-      <span>{home.name}</span>
+      <span>{away.name}</span>
       <Button onClick={() => onAdd(id, "home")}>+</Button>
       <Button onClick={() => onFinish(id)} className="col-start-3">
         Finish game
@@ -89,7 +99,6 @@ const Game = ({
 };
 
 const App = () => {
-  const [idUpdating, setIdUpdating] = React.useState<string | null>(null);
   const [scoreboard, setScoreboard] = React.useState(
     Scoreboard([
       {
@@ -100,9 +109,11 @@ const App = () => {
     ])
   );
 
-  const onAddNew = React.useCallback((home: string, away: string) => {
+  const [gamesRef] = useAutoAnimate();
+
+  const handleAddNew = (home: string, away: string) => {
     setScoreboard((s) => s.startGame(home, away));
-  }, []);
+  };
 
   const handleFinish = (gameId: string) => {
     setScoreboard((s) => s.finishGame(gameId));
@@ -113,21 +124,19 @@ const App = () => {
   };
 
   return (
-    <gameHandlersCtx.Provider value={{ onAddNew, scoreboard }}>
-      <main className="flex justify-center items-center p-24 ">
-        <GameOperations />
-        <div>
-          {scoreboard.getGames().map((game) => (
-            <Game
-              onFinish={handleFinish}
-              onAdd={handleAdd}
-              key={game.id}
-              game={game}
-            />
-          ))}
-        </div>
-      </main>
-    </gameHandlersCtx.Provider>
+    <main className="flex flex-col gap-6 justify-center items-center p-24 ">
+      <GameOperations onAddNew={handleAddNew} />
+      <div ref={gamesRef} className="flex flex-col gap-4">
+        {scoreboard.getGames().map((game) => (
+          <Game
+            onFinish={handleFinish}
+            onAdd={handleAdd}
+            key={game.id}
+            game={game}
+          />
+        ))}
+      </div>
+    </main>
   );
 };
 
