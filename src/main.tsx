@@ -31,7 +31,7 @@ const Label = tw.label`
 const GameOperations = ({
   onAddNew,
 }: {
-  onAddNew: (home: string, away: string) => void;
+  onAddNew: (homeEl: HTMLInputElement, awayEl: HTMLInputElement) => void;
 }) => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,10 +39,7 @@ const GameOperations = ({
     const home = elements.namedItem("home") as HTMLInputElement;
     const away = elements.namedItem("away") as HTMLInputElement;
 
-    onAddNew(home.value, away.value);
-
-    home.value = "";
-    away.value = "";
+    onAddNew(home, away);
   };
 
   return (
@@ -54,19 +51,28 @@ const GameOperations = ({
       <div className="flex gap-2">
         <div className="flex flex-col gap-1">
           <Label htmlFor="home">Home</Label>
-          <Container className="p-1" $as="input" name="home" type="text" />
+          <Container
+            placeholder="Team name"
+            className="p-1"
+            $as="input"
+            name="home"
+            type="text"
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="away">Away</Label>
-          <Container className="p-1" $as="input" name="away" type="text" />
+          <Container
+            placeholder="Team name"
+            className="p-1"
+            $as="input"
+            name="away"
+            type="text"
+          />
         </div>
       </div>
-      <button
-        type="submit"
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
+      <Button type="submit" className="">
         Add Game
-      </button>
+      </Button>
     </Container>
   );
 };
@@ -99,20 +105,27 @@ const Game = ({
 };
 
 const App = () => {
-  const [scoreboard, setScoreboard] = React.useState(
-    Scoreboard([
-      {
-        home: { name: "mae", score: 0 },
-        away: { name: "mae", score: 0 },
-        id: nanoid(),
-      },
-    ])
-  );
+  const [scoreboard, setScoreboard] = React.useState(Scoreboard());
 
   const [gamesRef] = useAutoAnimate();
 
-  const handleAddNew = (home: string, away: string) => {
-    setScoreboard((s) => s.startGame(home, away));
+  const handleAddNew = (home: HTMLInputElement, away: HTMLInputElement) => {
+    if (!home.value || !away.value) {
+      alert("Please enter both team names");
+      return;
+    }
+
+    if (scoreboard.teamPlaying(home.value, away.value)) {
+      alert("One of the teams is already playing");
+      return;
+    }
+
+    debugger;
+
+    setScoreboard(scoreboard.startGame(home.value, away.value));
+
+    home.value = "";
+    away.value = "";
   };
 
   const handleFinish = (gameId: string) => {

@@ -20,10 +20,14 @@ export const Scoreboard = (games: Game[] = []) => ({
     });
     return Scoreboard(updated);
   },
+  teamPlaying(...teams: string[]) {
+    return games.some(
+      (g) => teams.includes(g.home.name) || teams.includes(g.away.name)
+    );
+  },
   startGame(home: string, away: string) {
-    return Scoreboard([
-      ...games,
-      {
+    const updated = produce(games, (draft) => {
+      draft.push({
         home: {
           name: home,
           score: 0,
@@ -33,8 +37,9 @@ export const Scoreboard = (games: Game[] = []) => ({
           score: 0,
         },
         id: nanoid(),
-      },
-    ]);
+      });
+    });
+    return Scoreboard(updated);
   },
   getGames() {
     return games;
